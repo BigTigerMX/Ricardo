@@ -1,0 +1,5 @@
+__pycache__/
+cv-trabajo/
+node_modules/
+*.pyc
+fuentes/orig/
