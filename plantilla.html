@@ -17,7 +17,7 @@
 <link rel="preload" href="fuentes/bodoni-moda.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fuentes/plex-sans.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="estilo.css">
-<script>document.documentElement.classList.add('js')</script>
+<script>(function(d){d.classList.add('js');try{if(sessionStorage.getItem('rm-visto'))d.classList.add('sin-telon');else sessionStorage.setItem('rm-visto','1')}catch(e){}})(document.documentElement)</script>
 </head>
 <body>
 
@@ -42,6 +42,14 @@
 </svg>
 
 <a class="salto" href="#contenido" data-en="Skip to content">Saltar al contenido</a>
+
+<!-- Telón de entrada (sólo la primera vez por visita), grano de papel y el foco que sigue al cursor -->
+<div class="telon" aria-hidden="true">
+  <svg viewBox="-60 -330 2570 2180"><path class="tr tr--r" pathLength="1" d="{{R}}" transform="translate(0 1250) scale(1 -1)"/><path class="tr tr--m" pathLength="1" d="{{M}}" transform="translate(760 1750) scale(1 -1)"/></svg>
+  <span class="telon__linea"></span>
+</div>
+<div class="grano" aria-hidden="true"></div>
+<div class="foco" id="foco" aria-hidden="true"></div>
 
 <!-- El margen del pliego: doble raya roja, hilo de la costura y su nudo -->
 <div class="margen" aria-hidden="true">
@@ -108,6 +116,9 @@
     <li><b data-en="Spanish · English">Español · Inglés</b><span data-en="native · B2 upper-intermediate">nativo · B2 intermedio avanzado</span></li>
   </ul>
 </section>
+
+<!-- La cinta: sus materias corriendo en dos renglones. La llena el motor desde la tabla de Materias. -->
+<div class="cinta" id="cinta" aria-hidden="true"></div>
 
 <!-- ═════════════ PRIMERA · PERFIL ═════════════ -->
 <section class="pliego" id="perfil" data-foja="2">

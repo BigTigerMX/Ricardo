@@ -408,3 +408,82 @@ html[lang="es"] .idioma__op[data-l="es"], html[lang="en"] .idioma__op[data-l="en
   .rv, .rv-ln, .rv-x, .mat, .ent, .nombre .ln__i { clip-path: none !important; transform: none !important; }
   .barra, .margen, .roseta { display: none; }
 }
+
+/* ══════════════ CAPA PREMIUM ══════════════
+   Luis pidió más movimiento y más acabado. Todo lo de aquí es adorno: si se quita este
+   bloque el sitio sigue completo. Sólo transform, clip-path y, en adornos, opacidad. */
+:root { --t0: 0s; }
+.pliego { overflow-x: clip; }
+.telon { display: none; }
+/* grano de papel: quita lo plano del gris. Sin modo de mezcla, para no recomponer en cada scroll. */
+.grano { position: fixed; inset: 0; z-index: 35; pointer-events: none; opacity: .055;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+/* el foco: una luz suave que sigue al cursor */
+.foco { position: fixed; left: 0; top: 0; z-index: 34; width: 640px; height: 640px; margin: -320px 0 0 -320px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(143, 177, 230, .11), rgba(143, 177, 230, 0) 62%); transform: translate3d(var(--fx, -999px), var(--fy, -999px), 0); opacity: 0; transition: opacity .7s; }
+.foco--on { opacity: 1; }
+@media (hover: none) { .foco { display: none; } }
+
+/* la cinta de materias */
+.cinta { position: relative; z-index: 1; overflow: hidden; padding: clamp(1.1rem, 3.6vh, 2.2rem) 0; border-block: 1px solid var(--regla); background: linear-gradient(90deg, var(--papel), #111B2D 50%, var(--papel)); }
+.cinta:empty { display: none; }
+.cinta__fila { display: flex; width: max-content; will-change: transform; }
+.cinta__fila + .cinta__fila { margin-top: .2rem; }
+.cinta span { flex: none; padding-right: .9em; font: italic 500 clamp(1.9rem, 5.4vw, 4.4rem)/1.18 var(--serif); letter-spacing: -.02em; white-space: nowrap; color: var(--tinta); }
+.cinta span:nth-child(4n+3) { color: transparent; -webkit-text-stroke: 1px var(--sello); }
+.cinta i { flex: none; align-self: center; width: .5em; height: .5em; margin-right: 1.4em; font-size: clamp(1rem, 2.2vw, 1.8rem); background: var(--sello); transform: rotate(45deg); }
+
+/* las fojas: una luz que sigue al cursor por dentro */
+.foja::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .45s;
+  background: radial-gradient(460px circle at var(--px, 50%) var(--py, 0%), rgba(143, 177, 230, .16), rgba(143, 177, 230, 0) 62%); }
+.foja:hover::before { opacity: 1; }
+/* resplandores marinos que derivan detrás del contenido */
+.pliego--legajo::after, #formacion::after, #materias::after { content: ""; position: absolute; z-index: -1; left: 54%; top: 8%; width: 52vw; height: 52vw; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(20, 40, 74, .7), rgba(20, 40, 74, 0) 66%); }
+#materias::after { left: -18%; top: 30%; }
+.boton, .ficha { transition: color .3s, background .3s, border-color .3s, transform .4s var(--sale), translate .45s var(--sale); }
+.boton--lleno::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(105deg, rgba(255,255,255,0) 36%, rgba(143, 177, 230, .55) 50%, rgba(255,255,255,0) 64%); transform: translateX(-130%); }
+.mat__t { transition: transform .5s var(--sale); }
+@media (hover: hover) { .mat:hover .mat__t { transform: translateX(.35rem); } }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* el telón: el monograma se dibuja, y la hoja sube */
+  .js:not(.sin-telon) { --t0: 1.3s; }
+  .js:not(.sin-telon) .telon { display: grid; place-items: center; position: fixed; inset: 0; z-index: 60; background: var(--carbon); animation: telon-sube .95s cubic-bezier(.76, 0, .24, 1) 1.25s forwards; }
+  .telon svg { width: min(36vw, 190px); overflow: visible; }
+  .telon .tr { fill: var(--tinta); stroke: var(--tinta); fill-opacity: 0; stroke-width: 22; stroke-dasharray: 1; stroke-dashoffset: 1; animation: traza 1s ease-in-out .05s forwards, llena .35s ease .85s forwards; }
+  .telon .tr--m { fill: var(--sello); stroke: var(--sello); animation-delay: .2s, .95s; }
+  .telon__linea { position: absolute; left: 50%; bottom: 24%; width: min(44vw, 230px); height: 1px; margin-left: calc(min(44vw, 230px) / -2); background: var(--sello); transform: scaleX(0); transform-origin: left; animation: crece 1.15s cubic-bezier(.6, 0, .2, 1) .05s forwards; }
+  @keyframes telon-sube { to { transform: translateY(-101%); visibility: hidden; } }
+  @keyframes crece { to { transform: scaleX(1); } }
+
+  /* todo lo de la carátula espera a que suba el telón */
+  .js .nombre .ln__i { background: linear-gradient(100deg, currentColor 0 42%, #FFFFFF 50%, currentColor 58% 100%) 100% 0 / 260% 100% no-repeat; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    animation: sube 1.05s var(--sale) calc(var(--t0) + .25s + var(--d, 0s)) forwards, brillo 7.5s ease-in-out calc(var(--t0) + 3s + var(--d, 0s) * 2) infinite; }
+  @keyframes brillo { 0%, 58% { background-position: 100% 0; } 100% { background-position: 0% 0; } }
+  .js .ent--1 { animation-delay: calc(var(--t0) + .15s); } .js .ent--2 { animation-delay: calc(var(--t0) + .75s); } .js .ent--3 { animation-delay: calc(var(--t0) + .9s); }
+  .js .ent--4 { animation-delay: calc(var(--t0) + 1.02s); } .js .ent--5 { animation-delay: calc(var(--t0) + 1.15s); }
+  .js .barra { animation-delay: calc(var(--t0) + .1s); }
+  .js .marca__mono .tr { animation-delay: calc(var(--t0) + .35s), calc(var(--t0) + 1.6s); }
+  .js .marca__mono .tr--m { animation-delay: calc(var(--t0) + .6s), calc(var(--t0) + 1.75s); }
+  .js .sello--caratula { animation-delay: calc(var(--t0) + 1.25s), calc(var(--t0) + 1.59s); }
+  .js .sello--caratula .sello__onda { animation-delay: calc(var(--t0) + 1.57s); }
+
+  .cinta__fila { animation: corre 52s linear infinite; }
+  .cinta__fila + .cinta__fila { animation-direction: reverse; animation-duration: 64s; }
+  .cinta:hover .cinta__fila { animation-play-state: paused; }
+  @keyframes corre { to { transform: translateX(-50%); } }
+
+  .sello__anillo { animation: gira 90s linear infinite; }
+  @keyframes gira { to { rotate: 360deg; } }
+  .cedula-marco { animation: flota 6.5s ease-in-out infinite alternate; }
+  @keyframes flota { from { translate: 0 -7px; } to { translate: 0 7px; } }
+  .pliego--legajo::after, #formacion::after, #materias::after { animation: deriva 24s ease-in-out infinite alternate; }
+  @keyframes deriva { to { transform: translate3d(-16vw, 12vh, 0) scale(1.18); } }
+  .boton--lleno::after { animation: destello 6s ease-in-out calc(var(--t0) + 3s) infinite; }
+  @keyframes destello { 0%, 72% { transform: translateX(-130%); } 100% { transform: translateX(130%); } }
+  /* los títulos de cláusula se deslizan con el scroll; el filete de cada pliego se traza al llegar */
+  .clausula__t { transform: translate3d(calc(var(--par, 0) * 1px), 0, 0); }
+  .js .pliego::before { transform: scaleX(0); transform-origin: left; transition: transform 1.5s var(--sale); }
+  .js .pliego.visto::before { transform: none; }
+}
