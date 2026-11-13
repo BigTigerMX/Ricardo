@@ -36,7 +36,7 @@
        clip-path, o desplazado fuera de una máscara con overflow oculto, tiene
        intersección cero y el observador nunca avisa. Se mira la caja (que el
        recorte no altera) desde el mismo bucle que ya atiende el scroll. */
-    var porRevelar = $$('.rv, .rv-ln, .rv-x, .mat, .sello--cierre').map(function (el) {
+    var porRevelar = $$('.rv, .rv-ln, .rv-x, .mat, .sello--cierre, .pliego').map(function (el) {
       return { el: el, sensor: el.classList.contains('rv-ln') ? el.parentNode : el };
     });
     function revelar(vh) {
@@ -183,7 +183,8 @@
 
     /* ───────── bucle ───────── */
     var hilo = $('.margen__hilo'), nudo = $('.margen__nudo'), barra = $('#barra'), selloA = $$('.sello__anillo'), titulo = $('.clausula--clara .clausula__t');
-    var cedula = $('#cedula'), marcas = $$('[data-foja]'), sucio = true, ultimo = 0, inicio = performance.now();
+    var cedula = $('#cedula'), marcas = $$('[data-foja]'), sucio = true, ultimo = 0, T0 = (quieto || raiz.classList.contains('sin-telon')) ? 0 : 1300, inicio = performance.now() + T0;
+    var titulos = $$('.clausula__t'), foco = $('#foco'), cinta = $('#cinta');
     function alScroll() { sucio = true; }
     window.addEventListener('scroll', alScroll, { passive: true });
     window.addEventListener('resize', function () { centrarGrabado(); medirLegajo(); if (r1) r1.medir(); cenefa(); if (r2 && r2.hecho) { r2.medir(); r2.pintar(); } sucio = true; });
@@ -205,6 +206,7 @@
         }
         moverLegajo(sy);
         revelar(vh);
+        if (!quieto) for (var ti = 0; ti < titulos.length; ti++) { var rt = titulos[ti].getBoundingClientRect(); if (rt.bottom > -200 && rt.top < vh + 200) titulos[ti].style.setProperty('--par', (((rt.top + rt.height / 2) / vh - 0.5) * (window.innerWidth < 700 ? 22 : 64)).toFixed(1)); }
         // foja en curso: la última marca cuyo borde superior ya pasó el 58 % de la ventana
         var n = 1;
         for (var m = 0; m < marcas.length; m++) { if (marcas[m].getBoundingClientRect().top < vh * 0.58) n = +marcas[m].getAttribute('data-foja'); }
@@ -243,7 +245,19 @@
         marco.addEventListener('pointerleave', function () { sobreCedula = false; ced.style.removeProperty('--rx'); ced.style.removeProperty('--ry'); });
       }
       // el golpe del sello sacude un instante el texto de la carátula
-      setTimeout(function () { caratula.classList.add('caratula--golpe'); }, 1590);
+      setTimeout(function () { caratula.classList.add('caratula--golpe'); }, 1590 + T0);
+      /* el foco sigue al cursor; las fojas llevan su propia luz por dentro */
+      window.addEventListener('pointermove', function (e) {
+        if (e.pointerType === 'touch' || !foco) return;
+        foco.style.setProperty('--fx', e.clientX + 'px'); foco.style.setProperty('--fy', e.clientY + 'px'); foco.classList.add('foco--on');
+        var f = e.target.closest && e.target.closest('.foja');
+        if (f) { var r = f.getBoundingClientRect(); f.style.setProperty('--px', (e.clientX - r.left) + 'px'); f.style.setProperty('--py', (e.clientY - r.top) + 'px'); }
+      }, { passive: true });
+      /* botones con imán: se acercan un poco al cursor */
+      if (window.matchMedia('(hover: hover)').matches) $$('.boton, .ficha').forEach(function (b) {
+        b.addEventListener('pointermove', function (e) { var r = b.getBoundingClientRect(); b.style.translate = ((e.clientX - r.left - r.width / 2) * 0.16).toFixed(1) + 'px ' + ((e.clientY - r.top - r.height / 2) * 0.26).toFixed(1) + 'px'; });
+        b.addEventListener('pointerleave', function () { b.style.translate = ''; });
+      });
     }
 
     /* ───────── idioma ───────── */
@@ -251,6 +265,13 @@
       for (var i = 0; i < el.attributes.length; i++) if (el.attributes[i].name.indexOf('data-en-') === 0) return true; return false;
     });
     var titulos = { es: document.title, en: 'Luis Ricardo Garrido Mendoza · Attorney' };
+    /* la cinta se arma con las materias de la tabla, en el idioma que esté puesto */
+    function armarCinta() {
+      if (!cinta) return;
+      var m = $$('.mat__t').map(function (e) { return e.textContent; }); if (!m.length) return;
+      var fila = function (lista) { var h = lista.map(function (t) { return '<span>' + t.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span><i></i>'; }).join(''); return '<div class="cinta__fila">' + h + h + '</div>'; };
+      cinta.innerHTML = fila(m) + fila(m.slice().reverse());
+    }
     function poner(l) {
       traducibles.forEach(function (el) {
         if (el.dataset.es === undefined) el.dataset.es = el.innerHTML;
@@ -266,7 +287,7 @@
       });
       raiz.lang = l; document.title = titulos[l];
       try { localStorage.setItem('idioma', l); } catch (e) {}
-      centrarGrabado(); medirLegajo(); sucio = true;
+      armarCinta(); centrarGrabado(); medirLegajo(); sucio = true;
     }
     var barrido = null;
     function cambiar() {
@@ -293,7 +314,7 @@
     });
 
     /* ───────── arranque ───────── */
-    centrarGrabado(); if (r1) r1.medir();
+    armarCinta(); centrarGrabado(); if (r1) r1.medir();
     cenefa(); medirLegajo();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { centrarGrabado(); medirLegajo(); cenefa(); sucio = true; });
     window.addEventListener('load', function () { centrarGrabado(); medirLegajo(); sucio = true; });
