@@ -5,7 +5,8 @@
 (function () {
   'use strict';
   var raiz = document.documentElement;
-  var quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* con «reducir movimiento» se mueve igual, sin paralaje y más despacio: ver el final de estilo.css */
+  var suave = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var $ = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
   var limita = function (v, a, b) { return v < a ? a : v > b ? b : v; };
@@ -44,7 +45,7 @@
       var lote = 0, quedan = [];
       for (var i = 0; i < porRevelar.length; i++) {
         var it = porRevelar[i], r = it.sensor.getBoundingClientRect();
-        if (quieto || (r.top < vh * 0.9 && r.bottom > -40)) {
+        if (r.top < vh * 0.9 && r.bottom > -40) {
           it.el.style.setProperty('--r', (Math.min(lote++, 8) * 0.07) + 's');   // los que entran juntos, escalonados
           it.el.classList.add('visto');
         } else quedan.push(it);
@@ -60,7 +61,7 @@
        repartida: al superponerse tejen el entrelazado del papel seguridad. */
     function Roseta(lienzo, opc) {
       this.c = lienzo; this.x = lienzo.getContext('2d'); this.o = opc;
-      this.fase = 0; this.prog = quieto ? 1 : 0; this.px = 0; this.py = 0; this.tx = 0; this.ty = 0; this.lado = 0;
+      this.fase = 0; this.prog = 0; this.px = 0; this.py = 0; this.tx = 0; this.ty = 0; this.lado = 0;
     }
     Roseta.prototype.medir = function () {
       var r = this.c.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -146,7 +147,7 @@
         if (alto > libre - tope - 16) cabe = false;
         return { tope: tope, alto: alto, mb: parseFloat(cs.marginBottom) || 0 };
       });
-      plano = !cabe || quieto;
+      plano = !cabe;
       legajo.classList.toggle('legajo--plano', plano);
       if (plano) return;
       // tope natural (en documento) de cada foja: se obtiene soltándolas un instante
@@ -183,7 +184,7 @@
 
     /* ───────── bucle ───────── */
     var hilo = $('.margen__hilo'), nudo = $('.margen__nudo'), barra = $('#barra'), selloA = $$('.sello__anillo'), titulo = $('.clausula--clara .clausula__t');
-    var cedula = $('#cedula'), marcas = $$('[data-foja]'), sucio = true, ultimo = 0, T0 = (quieto || raiz.classList.contains('sin-telon')) ? 0 : 1300, inicio = performance.now() + T0;
+    var cedula = $('#cedula'), marcas = $$('[data-foja]'), sucio = true, ultimo = 0, T0 = raiz.classList.contains('sin-telon') ? 0 : 1300, inicio = performance.now() + T0;
     var titulos = $$('.clausula__t'), foco = $('#foco'), cinta = $('#cinta');
     function alScroll() { sucio = true; }
     window.addEventListener('scroll', alScroll, { passive: true });
@@ -198,15 +199,13 @@
         if (hilo) hilo.style.setProperty('--p', (p * 100).toFixed(2) + '%');
         if (nudo) nudo.style.transform = 'translateY(' + (p * vh).toFixed(1) + 'px)';
         if (barra) barra.classList.toggle('barra--raya', sy > 8);
-        if (!quieto) {
-          for (var a = 0; a < selloA.length; a++) selloA[a].style.setProperty('--giro', (sy * 0.06).toFixed(2) + 'deg');
-          if (r1) r1.c.style.setProperty('--giro', (sy * 0.022).toFixed(2) + 'deg');
-          if (titulo && carbon) { var rc = carbon.getBoundingClientRect(); titulo.style.setProperty('--calco', (2 + limita(rc.top / vh, 0, 1) * 9).toFixed(1)); }
-          if (cedula && !sobreCedula) cedula.style.setProperty('--ka', (30 + sy * 0.25).toFixed(1));
-        }
+        for (var a = 0; a < selloA.length; a++) selloA[a].style.setProperty('--giro', (sy * 0.06).toFixed(2) + 'deg');
+        if (r1) r1.c.style.setProperty('--giro', (sy * 0.022).toFixed(2) + 'deg');
+        if (titulo && carbon) { var rc = carbon.getBoundingClientRect(); titulo.style.setProperty('--calco', (2 + limita(rc.top / vh, 0, 1) * 9).toFixed(1)); }
+        if (cedula && !sobreCedula) cedula.style.setProperty('--ka', (30 + sy * 0.25).toFixed(1));
         moverLegajo(sy);
         revelar(vh);
-        if (!quieto) for (var ti = 0; ti < titulos.length; ti++) { var rt = titulos[ti].getBoundingClientRect(); if (rt.bottom > -200 && rt.top < vh + 200) titulos[ti].style.setProperty('--par', (((rt.top + rt.height / 2) / vh - 0.5) * (window.innerWidth < 700 ? 22 : 64)).toFixed(1)); }
+        if (!suave) for (var ti = 0; ti < titulos.length; ti++) { var rt = titulos[ti].getBoundingClientRect(); if (rt.bottom > -200 && rt.top < vh + 200) titulos[ti].style.setProperty('--par', (((rt.top + rt.height / 2) / vh - 0.5) * (window.innerWidth < 700 ? 22 : 64)).toFixed(1)); }
         // foja en curso: la última marca cuyo borde superior ya pasó el 58 % de la ventana
         var n = 1;
         for (var m = 0; m < marcas.length; m++) { if (marcas[m].getBoundingClientRect().top < vh * 0.58) n = +marcas[m].getAttribute('data-foja'); }
@@ -218,47 +217,43 @@
       // la roseta de la carátula: ~30 fps, sólo mientras se ve
       if (r1 && veR1 && !document.hidden && ahora - ultimo > 32) {
         var dt = Math.min(64, ahora - ultimo) / 1000; ultimo = ahora;
-        if (!quieto) {
-          if (r1.prog < 1) { var u = limita((ahora - inicio - 150) / 2300, 0, 1); r1.prog = 1 - Math.pow(1 - u, 3); }
-          r1.fase += dt * 0.11;
-          r1.px += (r1.tx - r1.px) * 0.06; r1.py += (r1.ty - r1.py) * 0.06;
-          r1.pintar();
-        } else if (!r1.hecho) { r1.hecho = true; r1.pintar(); }
+        if (r1.prog < 1) { var u = limita((ahora - inicio - 150) / 2300, 0, 1); r1.prog = 1 - Math.pow(1 - u, 3); }
+        r1.fase += dt * (suave ? 0.05 : 0.11);
+        r1.px += (r1.tx - r1.px) * 0.06; r1.py += (r1.ty - r1.py) * 0.06;
+        r1.pintar();
       }
     }
 
     /* ───────── puntero ───────── */
     var sobreCedula = false;
-    if (!quieto) {
-      window.addEventListener('pointermove', function (e) {
-        if (!r1 || !veR1) return;
-        r1.tx = (e.clientX / window.innerWidth - 0.5) * 2; r1.ty = (e.clientY / window.innerHeight - 0.5) * 2;
-      }, { passive: true });
-      var marco = $('.cedula-marco'), ced = $('#cedula');
-      if (marco && ced) {
-        marco.addEventListener('pointermove', function (e) {
-          var r = marco.getBoundingClientRect(), fx = limita((e.clientX - r.left) / r.width, 0, 1), fy = limita((e.clientY - r.top) / r.height, 0, 1);
-          sobreCedula = true;
-          ced.style.setProperty('--ry', ((fx - 0.5) * 22).toFixed(2) + 'deg'); ced.style.setProperty('--rx', ((0.5 - fy) * 16).toFixed(2) + 'deg');
-          ced.style.setProperty('--kx', (fx * 100).toFixed(1)); ced.style.setProperty('--ky', (fy * 100).toFixed(1)); ced.style.setProperty('--ka', (fx * 240).toFixed(1));
-        });
-        marco.addEventListener('pointerleave', function () { sobreCedula = false; ced.style.removeProperty('--rx'); ced.style.removeProperty('--ry'); });
-      }
-      // el golpe del sello sacude un instante el texto de la carátula
-      setTimeout(function () { caratula.classList.add('caratula--golpe'); }, 1590 + T0);
-      /* el foco sigue al cursor; las fojas llevan su propia luz por dentro */
-      window.addEventListener('pointermove', function (e) {
-        if (e.pointerType === 'touch' || !foco) return;
-        foco.style.setProperty('--fx', e.clientX + 'px'); foco.style.setProperty('--fy', e.clientY + 'px'); foco.classList.add('foco--on');
-        var f = e.target.closest && e.target.closest('.foja');
-        if (f) { var r = f.getBoundingClientRect(); f.style.setProperty('--px', (e.clientX - r.left) + 'px'); f.style.setProperty('--py', (e.clientY - r.top) + 'px'); }
-      }, { passive: true });
-      /* botones con imán: se acercan un poco al cursor */
-      if (window.matchMedia('(hover: hover)').matches) $$('.boton, .ficha').forEach(function (b) {
-        b.addEventListener('pointermove', function (e) { var r = b.getBoundingClientRect(); b.style.translate = ((e.clientX - r.left - r.width / 2) * 0.16).toFixed(1) + 'px ' + ((e.clientY - r.top - r.height / 2) * 0.26).toFixed(1) + 'px'; });
-        b.addEventListener('pointerleave', function () { b.style.translate = ''; });
+    window.addEventListener('pointermove', function (e) {
+      if (suave || !r1 || !veR1) return;   // el grabado no sigue al cursor
+      r1.tx = (e.clientX / window.innerWidth - 0.5) * 2; r1.ty = (e.clientY / window.innerHeight - 0.5) * 2;
+    }, { passive: true });
+    var marco = $('.cedula-marco'), ced = $('#cedula');
+    if (marco && ced) {
+      marco.addEventListener('pointermove', function (e) {
+        var r = marco.getBoundingClientRect(), fx = limita((e.clientX - r.left) / r.width, 0, 1), fy = limita((e.clientY - r.top) / r.height, 0, 1);
+        sobreCedula = true;
+        ced.style.setProperty('--ry', ((fx - 0.5) * 22).toFixed(2) + 'deg'); ced.style.setProperty('--rx', ((0.5 - fy) * 16).toFixed(2) + 'deg');
+        ced.style.setProperty('--kx', (fx * 100).toFixed(1)); ced.style.setProperty('--ky', (fy * 100).toFixed(1)); ced.style.setProperty('--ka', (fx * 240).toFixed(1));
       });
+      marco.addEventListener('pointerleave', function () { sobreCedula = false; ced.style.removeProperty('--rx'); ced.style.removeProperty('--ry'); });
     }
+    // el golpe del sello sacude un instante el texto de la carátula
+    setTimeout(function () { caratula.classList.add('caratula--golpe'); }, 1590 + T0);
+    /* el foco sigue al cursor; las fojas llevan su propia luz por dentro */
+    window.addEventListener('pointermove', function (e) {
+      if (e.pointerType === 'touch' || !foco) return;
+      foco.style.setProperty('--fx', e.clientX + 'px'); foco.style.setProperty('--fy', e.clientY + 'px'); foco.classList.add('foco--on');
+      var f = e.target.closest && e.target.closest('.foja');
+      if (f) { var r = f.getBoundingClientRect(); f.style.setProperty('--px', (e.clientX - r.left) + 'px'); f.style.setProperty('--py', (e.clientY - r.top) + 'px'); }
+    }, { passive: true });
+    /* botones con imán: se acercan un poco al cursor */
+    if (window.matchMedia('(hover: hover)').matches) $$('.boton, .ficha').forEach(function (b) {
+      b.addEventListener('pointermove', function (e) { var r = b.getBoundingClientRect(); b.style.translate = ((e.clientX - r.left - r.width / 2) * 0.16).toFixed(1) + 'px ' + ((e.clientY - r.top - r.height / 2) * 0.26).toFixed(1) + 'px'; });
+      b.addEventListener('pointerleave', function () { b.style.translate = ''; });
+    });
 
     /* ───────── idioma ───────── */
     var boton = $('.idioma'), traducibles = $$('[data-en]'), conAttr = $$('*').filter(function (el) {
@@ -292,7 +287,7 @@
     var barrido = null;
     function cambiar() {
       var l = raiz.lang === 'es' ? 'en' : 'es';
-      if (quieto || !document.body.animate) { poner(l); return; }
+      if (!document.body.animate) { poner(l); return; }
       // una hoja de tinta cruza la pantalla y el texto cambia cuando la tapa entera
       if (!barrido) { barrido = document.createElement('div'); barrido.setAttribute('aria-hidden', 'true'); barrido.style.cssText = 'position:fixed;inset:0;z-index:40;background:#14284A;transform:translateY(-101%);pointer-events:none'; document.body.appendChild(barrido); }
       var an = barrido.animate([{ transform: 'translateY(-101%)' }, { transform: 'translateY(0)', offset: 0.5 }, { transform: 'translateY(101%)' }], { duration: 820, easing: 'cubic-bezier(.7,0,.3,1)' });

@@ -10,7 +10,12 @@ OG = "https://bigtigermx.github.io/Ricardo/tarjeta-social.jpg"
 
 html = (AQUI / "plantilla.html").read_text()
 html = html.replace("{{R}}", G["R"]["d"]).replace("{{M}}", G["M"]["d"]).replace("{{OG}}", OG)
-(SITIO / "index.html").write_text(html)
+# huella del contenido en el enlace: un navegador que ya visitó el sitio guarda estilo.css y motor.js
+# hasta diez minutos (GitHub Pages), y vería la página nueva con el movimiento viejo
+import hashlib
+huella = lambda f: hashlib.sha1((SITIO / f).read_bytes()).hexdigest()[:8]
+(SITIO / "index.html").write_text(html.replace('href="estilo.css"', f'href="estilo.css?v={huella("estilo.css")}"')
+                                      .replace('src="motor.js"', f'src="motor.js?v={huella("motor.js")}"'))
 
 (SITIO / "favicon.svg").write_text(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-260 -430 2970 2380">'

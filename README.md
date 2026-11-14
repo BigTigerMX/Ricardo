@@ -17,7 +17,7 @@ Sitio personal y currículum. Paleta: gris oscuro (grafito) y azul oscuro (marin
 
 - **No se inventa ningún dato.** Todo sale del currículum que entregó Ricardo. Lo que él no dijo, no está.
 - El sitio lleva `<meta name="robots" content="noindex">`: tiene su teléfono y su correo, y no debe salir en buscadores hasta que él lo autorice. Quitarlo es borrar ese renglón de `plantilla.html`.
-- Movimiento sólo con `transform` y `clip-path`; nunca se anima la opacidad de un texto. Con `prefers-reduced-motion` o sin JavaScript el contenido se ve completo y quieto.
+- Movimiento sólo con `transform` y `clip-path`; nunca se anima la opacidad de un texto. Sin JavaScript el contenido se ve completo y quieto. Con `prefers-reduced-motion` se mueve igual pero sin lo que marea (el telón se desvanece, el sello se asienta, sin sacudida ni paralaje, la cinta más lenta): muchas compus lo traen encendido sin que su dueño lo sepa, y quieto del todo parecía roto.
 - Los encabezados del PDF llevan poco espaciado entre letras a propósito: con más, el extractor de texto lee «E D U C A T I O N» y un filtro automático no reconoce la sección. Está medido en `hacer_cv.py`.
 
 ## Reconstruir
