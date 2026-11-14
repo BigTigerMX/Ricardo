@@ -309,10 +309,10 @@ html[lang="es"] .idioma__op[data-l="es"], html[lang="en"] .idioma__op[data-l="en
 .pie a:hover { color: var(--sello-claro); }
 
 /* ══════════════ MOVIMIENTO ══════════════
-   Todo vive bajo .js y fuera de prefers-reduced-motion: sin script o con
-   movimiento reducido, el contenido se ve entero y quieto, nunca a medias.
+   Todo vive bajo .js: sin script el contenido se ve entero y quieto, nunca a medias.
+   Con «reducir movimiento» también se mueve, pero sin lo que marea (ver el final).
    Sólo transform y clip-path; la opacidad se usa nada más en adornos. */
-@media (prefers-reduced-motion: no-preference) {
+@media screen {
   /* entrada de la carátula */
   .js .nombre .ln__i { transform: translateY(112%) rotate(4deg); transform-origin: 0 100%; animation: sube 1.05s var(--sale) calc(.25s + var(--d, 0s)) forwards; }
   .js .ent { clip-path: inset(0 0 100% 0); transform: translateY(16px); animation: destapa .9s var(--sale) forwards; }
@@ -353,12 +353,6 @@ html[lang="es"] .idioma__op[data-l="es"], html[lang="en"] .idioma__op[data-l="en
   .js .mat.visto { clip-path: inset(-2px -2px -2px -100px); transform: none; }
   .js .mat.visto .mat__p { transform: none; }
   .js .cedula:hover { transition-duration: .12s; }
-}
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  .frentes__eje span { animation: none; }
-  .rueda__tira { transition: none; }
-  .margen__hilo { clip-path: none; }
 }
 
 /* ══════════════ ANCHOS ══════════════ */
@@ -446,7 +440,7 @@ html[lang="es"] .idioma__op[data-l="es"], html[lang="en"] .idioma__op[data-l="en
 .mat__t { transition: transform .5s var(--sale); }
 @media (hover: hover) { .mat:hover .mat__t { transform: translateX(.35rem); } }
 
-@media (prefers-reduced-motion: no-preference) {
+@media screen {
   /* el telón: el monograma se dibuja, y la hoja sube */
   .js:not(.sin-telon) { --t0: 1.3s; }
   .js:not(.sin-telon) .telon { display: grid; place-items: center; position: fixed; inset: 0; z-index: 60; background: var(--carbon); animation: telon-sube .95s cubic-bezier(.76, 0, .24, 1) 1.25s forwards; }
@@ -486,4 +480,25 @@ html[lang="es"] .idioma__op[data-l="es"], html[lang="en"] .idioma__op[data-l="en
   .clausula__t { transform: translate3d(calc(var(--par, 0) * 1px), 0, 0); }
   .js .pliego::before { transform: scaleX(0); transform-origin: left; transition: transform 1.5s var(--sale); }
   .js .pliego.visto::before { transform: none; }
+}
+
+/* ══════════════ MOVIMIENTO REDUCIDO ══════════════
+   Antes, con «reducir movimiento» el sitio se quedaba quieto del todo. Lo tiene encendido
+   mucha compu sin que su dueño lo sepa (Windows con «Efectos de animación» apagado o en
+   «mejor rendimiento»), y así le pasó a Luis: en el teléfono se movía y en la compu no.
+   Reducir no es quitar: se queda lo que destapa y lo que cambia de luz, y se va lo que
+   marea — vuelos grandes, sacudidas, paralaje y desplazamientos rápidos. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .js:not(.sin-telon) .telon { animation-name: telon-funde; animation-duration: .7s; }
+  @keyframes telon-funde { to { opacity: 0; visibility: hidden; } }
+  .js .sello--caratula { animation-name: asienta, none; animation-duration: .6s, .5s; }
+  .js .sello--cierre.visto { animation-name: asienta2, none; animation-duration: .6s, .5s; }
+  @keyframes asienta { from { visibility: visible; opacity: 0; transform: rotate(-9deg) scale(1.1); } to { visibility: visible; opacity: 1; transform: rotate(-9deg) scale(1); } }
+  @keyframes asienta2 { from { visibility: visible; opacity: 0; transform: rotate(11deg) scale(1.1); } to { visibility: visible; opacity: 1; transform: rotate(11deg) scale(1); } }
+  .js .caratula--golpe .caratula__texto { animation: none; }
+  .cinta__fila { animation-duration: 104s; }
+  .cinta__fila + .cinta__fila { animation-duration: 128s; }
+  .pliego--legajo::after, #formacion::after, #materias::after { animation-duration: 48s; }
+  .clausula__t { transform: none; }
 }
